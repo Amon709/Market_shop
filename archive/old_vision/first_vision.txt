@@ -1,0 +1,92 @@
+# Market Shop — First Vision and Architecture Draft (Draft version)
+
+## What the program should do
+
+### 1. Main page:
+- Show top 5 products (by popularity)
+- Add top 5 products to basket
+- Go to other pages (3 pages total)
+
+### 2. Categories page:
+- Show available categories:
+  - smartphones
+  - laptops
+  - computers
+- Default category: smartphones
+- Show products in selected category
+- Add products to basket
+- Change category
+- Go to other pages
+
+### 3. Search page
+### 4. Basket page
+
+## Product structure
+Each product has:
+- Unique ID
+- Category
+- is_top (for top sales)
+- Name
+- Price
+- Quantity in stock
+
+---
+
+## First logic draft
+
+[Main while loop]
+           |---- print(Show pages with numbers for actions).
+           |
+           |---- Page 1.
+           |       |--- Show top 5 products.
+           |---- print(Action commands)
+           |
+           | ---- Action(get user input)
+           |           |--- Add products to basket.
+           |                |--- (Add products by id, multiple ids with comma)
+           |
+           |       |--- Go to other pages.
+           |                 |---Get new page number from user
+           |                 |---Change current page
+           |
+           |---- Page 2
+           |---- Page 3
+           |---- Page 4
+           |
+           |
+           |
+           |---- Process actions
+           |       |--- mtp (move to page)
+           |       |--- atb (add to basket)
+           |       |--- sc (switch category)
+           |       |--- s (search)
+           |       |--- exit
+
+## Architecture draft (next day)
+
+[Main while loop]
+|
+|---- print(Show pages with numbers for actions)
+|
+|---- Page 1
+|    |--- Show top 5 products
+|---- print(Action commands)
+|
+|---- Action (get user input)
+|
+|---- Page 2
+|---- Page 3
+|---- Page 4
+|
+|
+|
+|---- Process actions
+     |--- mtp
+         |--- (get new page number from user)
+             |--- (change current page)
+     |--- atb
+         |--- (check if current page is 1,2,3)
+         |--- (add products to basket by id or product number)
+     |--- sc
+     |--- s
+     |--- exit

@@ -1,187 +1,283 @@
-products_list = [
-    {"id": "1", "category": "smartphones", "is_top": True, "name": "iPhone 13", "price": 900, "quantity": 10},
-    {"id": "2", "category": "laptops", "is_top": True, "name": "MacBook Air", "price": 1100, "quantity": 5},
-    {"id": "3", "category": "smartphones", "is_top": False, "name": "Samsung Galaxy", "price": 700, "quantity": 15},
-    {"id": "4", "category": "laptops", "is_top": False, "name": "HP Pavilion", "price": 800, "quantity": 7},
-    {"id": "5", "category": "computers", "is_top": False, "name": "Dell Desktop", "price": 750, "quantity": 8},
-    {"id": "6", "category": "computers", "is_top": True, "name": "Apple iMac", "price": 1500, "quantity": 4},
-    {"id": "7", "category": "smartphones", "is_top": True, "name": "Google Pixel", "price": 800, "quantity": 3},
-    {"id": "8", "category": "laptops", "is_top": False, "name": "Asus ZenBook", "price": 1050, "quantity": 6},
-    {"id": "9", "category": "smartphones", "is_top": False, "name": "Xiaomi Mi 11", "price": 650, "quantity": 12},
-    {"id": "10", "category": "laptops", "is_top": True, "name": "Lenovo ThinkPad", "price": 950, "quantity": 9},
-    {"id": "11", "category": "computers", "is_top": False, "name": "HP Envy Desktop", "price": 900, "quantity": 11},
-    {"id": "12", "category": "smartphones", "is_top": True, "name": "OnePlus 9", "price": 850, "quantity": 6},
-    {"id": "13", "category": "laptops", "is_top": False, "name": "Dell XPS 13", "price": 1200, "quantity": 3},
-    {"id": "14", "category": "computers", "is_top": True, "name": "Acer Aspire", "price": 1100, "quantity": 7},
-    {"id": "15", "category": "smartphones", "is_top": False, "name": "Sony Xperia", "price": 750, "quantity": 5},
-    {"id": "16", "category": "laptops", "is_top": False, "name": "Microsoft Surface Laptop", "price": 1300,
-     "quantity": 2},
-]
+from data import products_list
+from data import categories
+
+def page_1():
+    print("\nГлавная страница:")
+
+    top_items = [top for top in products_list if top["is_top"]]
+    top_5_items = top_items[:5]
+    print("\nСамые популярные товары в магазине топ 5.")
+    for products in top_5_items:
+        print(f"id. {products["id"]}, категория: {products["category"]},"
+              f" цена: {products["price"]} количество. {products["quantity"]}.")
+    print("\nПерейти на другую страницу: 'mtp'\nДобавить товары в корзину: 'atb'"
+          "\nВыход: 'exit','выход'\n")
+
+
+def page_2(selected_categ):
+    print("\nКатегории товаров:")
+    for num, all_categ in enumerate(categories):
+        print(f"{num + 1}.{all_categ['key']}")
+
+    print("\nВсе товары в выбранной категории:\nПо умолчанию: 'smartphones'\n")
+
+    for categ in products_list:
+        if selected_categ in categ["category"]:
+            print(f"id. {categ["id"]}, Категория: {categ["category"]},"
+                  f" Название: {categ["name"]}, Цена: {categ["price"]} Количество. {categ["quantity"]}.")
+
+    print("\nПерейти на другую страницу: 'mtp'\nДобавить товары в корзину: 'atb'"
+          "\nИзменить категорию: 'sc'\nВыход: 'exit','выход'\n")
+
+def page_3():
+    print("\nСтраница поиска:")
+
+    if len(search_history) == 0:
+        print(f"Всего товаров {len(products_list)}.\n")
+
+        for products in products_list:
+            print(f"id: {products["id"]}. {products["name"]} - {products["price"]}$")
+
+    else:
+        for num, name in enumerate(search_history):
+            print(f"Последний поиск: {num + 1}. {name} - {search_history[name]}.")
+
+    print("\nПерейти на другую страницу: 'mtp'\nДобавить товары в корзину: 'atb'"
+          "\nСовершить поиск: 's'\nУдалить поисковую историю: 'del'\nВыход: 'exit','выход'\n")
+
+def page_4():
+    basket_summ = 0
+    if len(basket) == 0:
+        print("Корзина пуста!\nОформите заказ!")
+    else:
+        print("\nКорзина:")
+        for products in basket.keys():
+            print(f"id: {products}. {basket[products]["name"]}-"
+                  f" {basket[products]["price"]}$: {basket[products]["quantity in basket"]} шт.")
+        for products in basket.values():
+            basket_summ += products["price"] * products["quantity in basket"]
+        print(f"\nСумма ценности корзины: {basket_summ}$.")
+
+    print("\nПерейти на другие страницы: 'mtp'\nОформить заказ: 'Buy'\nУдалить товар: 'itemdel'\nВыход: 'exit','выход'")
+
+def validations_command(user_action, allowed_command):
+    if user_action not in allowed_command:
+        print("Не опознанная команда!\nВыберите из существующих команда!")
+        return False
+
+    return True
+
+def action_buy(item_id_buy, baskets, product_list):
+    if not item_id_buy:
+        print("Пустой ввод!")
+        return False
+
+    if item_id_buy in baskets:
+        quantity_in_basket = baskets[item_id_buy]["quantity in basket"]
+
+        for product in product_list:
+            if product["id"] == item_id_buy:
+                product["quantity"] -= quantity_in_basket
+
+        del baskets[item_id_buy]
+        print("Заказ оформлен!\nДоставка через 3 дня!")
+        return True
+
+    print("Товара нет в корзине")
+    return False
+
+def action_mtp(input_new_page):
+
+    if input_new_page == "":
+        print("Пустой ввод!")
+
+    elif input_new_page in ["1", "2", "3", "4"]:
+        return int(input_new_page)
+
+    elif not input_new_page.isdigit():
+        print(f"{input_new_page}: это не число!")
+
+    return None
+
+def action_atb(input_item, baskets, product_list):
+
+    unpacet_num = [num.strip() for num in input_item.split(",")]
+    flag = False
+
+    for num_unpuk in unpacet_num:
+        if  num_unpuk == "":
+            print("Ввод id пустой!")
+            continue
+
+        if not num_unpuk.isdigit():
+            print(f"{num_unpuk}: это не число!")
+            continue
+
+        found = False
+
+        for id_num in product_list:
+
+            if id_num["id"] == num_unpuk:
+                if id_num["id"] in baskets:
+                    baskets[id_num["id"]]["quantity in basket"] += 1
+
+                else:
+                    baskets[id_num["id"]] = {"name": id_num["name"],
+                                            "price": id_num["price"],
+                                            "quantity in basket": 1
+                                            }
+                flag = True
+                found = True
+                break
+
+        if not found:
+            print(f"Товар с id: {num_unpuk} не найден!")
+
+    return flag
+
+def action_sc(user_input, sel_category, categoria):
+
+    if user_input == "":
+        print("Пустой ввод!")
+        return None
+
+    if user_input not in ["1", "2", "3"]:
+        print("Некорректный Ввод!\nПовторите ввод по новой!")
+        return None
+
+    new_category = categoria[int(user_input) - 1]["key"]
+
+    if new_category == sel_category:
+        print("Сменяемая категория равна текущей!")
+        return None
+
+    return new_category
+
+def action_search(user_input, product_list, history_s):
+    if user_input == "":
+        print("Пустой ввод!")
+        return None
+
+    user_search_found = []
+    flag = False
+
+    for product in product_list:
+        if user_input.lower() in product["name"].lower():
+            user_search_found.append(product)
+            flag = True
+
+    if flag:
+        history_s[user_input] =  user_search_found
+        for product in user_search_found:
+            print(f"id: {product["id"]}. {product["name"]} - {product["price"]}$")
+
+    else:
+        history_s[user_input] = "Нет результатов!"
+        print(f"Результат поиска: {user_input} - ничего не найдено!")
+
+    return None
+
+def action_itemdel(id_delite, baskets):
+    if not id_delite:
+        print("Пустой ввод!")
+        return False
+
+    if id_delite not in baskets:
+        print("Такого товара для удаления нету!")
+        return False
+
+    baskets[id_delite]["quantity in basket"] -= 1
+
+
+    if baskets[id_delite]["quantity in basket"] == 0:
+        del baskets[id_delite]
+        print("Товар удален с корзины!")
+    return True
 
 basket = {}
 current_page = 1
 selected_category = "smartphones"
-search_query = ""
-
-categories = [
-    {"key": "smartphones", "name": "Смартфоны"},
-    {"key": "laptops", "name": "Ноутбуки"},
-    {"key": "computers", "name": "Компьютеры"},
-]
+search_history = {}
 
 while True:
     action = ""
     print("\n" + "-" * 50 + "\n")
 
     if current_page == 1:
-        print(
-            "1. Главная страница\n"
-            "2. Страница категорий\n"
-            "3. Страница поиска\n"
-            "4. Страница корзины\n"
-            "5. Выход\n"
-        )
+        page_1()
 
-    if current_page == 1:
-        print("\nГлавная страница:")
-        top_items = [top for top in products_list if top["is_top"]]
-        top_5_items = top_items[:5]
-        print("\nСамые популярные товары в магазине топ 5.")
-        for product in top_5_items:
-            print(f"id. {product["id"]}, категория: {product["category"]},"
-                  f" цена: {product["price"]} количество. {product["quantity"]}.")
-        print("\nПерейти на другую страницу: 'mtp'\nДобавить товары в корзину: 'atb'"
-              "\nВыход: 'exit','выход'\n")
-            
         action = input("Выберите действие: ").lower().strip()
-            
-        if action not in ["mtp", "atb", "exit", "выход"]:
-            print("Не опознанная команда!\nВыберите из существующих команд!")
 
-    if current_page == 2:
-        print("\nКатегории товаров:")
-        for num, all_categ in enumerate(categories):
-            print(f"{num + 1}.{all_categ["key"]}")
+        if not validations_command(action, ["mtp", "atb", "exit", "выход"]):
+            continue
 
-        print("\nВсе товары в выбранной категории:\nПо умолчанию: 'smartphones'\n")
-
-        for categ in products_list:
-            if selected_category in categ["category"]:
-                print(f"id. {categ["id"]}, Категория: {categ["category"]},"
-                      f" Название: {categ["name"]}, Цена: {categ["price"]} Количество. {categ["quantity"]}.")
-
-        print("\nПерейти на другую страницу: 'mtp'\nДобавить товары в корзину: 'atb'"
-              "\nИзменить категорию: 'sc'\nВыход: 'exit','выход'\n")
+    elif current_page == 2:
+        page_2(selected_category)
 
         action = input("\nВыберите действие: ").lower().strip()
 
-        if action not in ["mtp", "atb", "exit", "выход", "sc"]:
-            print("Не опознанная команда!\nВыберите из существующих команд!")
+        if not validations_command(action, ["mtp", "atb", "exit", "выход", "sc"]):
+            continue
 
-    if current_page == 3:
-        print("\nСтраница поиска:")
-
-        if search_query == "":
-            print(f"Всего товаров {len(products_list)}.\n")
-
-            for product in products_list:
-                print(f"id: {product["id"]}. {product["name"]} - {product["price"]}$")
-
-        else:
-            print(f"Последний поиск: {search_query}")
-
-        print("\nПерейти на другую страницу: 'mtp'\nДобавить товары в корзину: 'atb'"
-              "\nСовершить поиск: 's'\nУдалить поисковую историю: 'del'\nВыход: 'exit','выход'\n")
+    elif current_page == 3:
+        page_3()
 
         action = input("\nВыберите действие: ").lower().strip()
+        if not validations_command(action, ["mtp", "atb", "exit", "выход", "s", "del"]):
+            continue
 
-        if action not in ["mtp", "atb", "exit", "выход", "s", "del"]:
-            print("Не опознанная команда!\nВыберите из существующих команд!")
+    elif current_page == 4:
+        page_4()
 
-        if action == "del":
-            search_query = ""
-
-    if current_page == 4:
-        basket_summ = 0
-        if len(basket) == 0:
-            print("Корзина пуста!\nОформите заказ!")
-        else:
-            print("\nКорзина:")
-            for product in basket.keys():
-                print(f"id: {product}. {basket[product]["name"]}-"
-                      f" {basket[product]["price"]}$: {basket[product]["quantity in basket"]} шт.")
-            for product in basket.values():
-                basket_summ += product["price"] * product["quantity in basket"]
-            print(f"\nСумма ценности корзины: {basket_summ}$.")
-
-        print("\nПерейти на другие страницы: 'mtp'\nОформить заказ: 'Buy'\nУдалить товар: 'itemdel'\nВыход: 'exit','выход'")
         action = input("Выберите действие: ").lower().strip()
 
-        if action not in ["mtp", "buy", "exit", "выход", "itemdel"]:
-            print("Не опознанная команда!\nВыберите из существующих команд!")
-
-        if action == "itemdel":
-            itemdel_id = input("Введите id для удаления товара ")
-            if itemdel_id not in basket.keys():
-                print("Такого товара для удаления нету!")
-            else:
-                for id_nums in basket:
-                    if id_nums == itemdel_id:
-                        basket[id_nums]["quantity in basket"] -= 1
-                    if basket[id_nums]["quantity in basket"] == 0:
-                        print("Товар удален с корзины!")
-                del basket[itemdel_id]
+        if not validations_command(action, ["mtp", "buy", "exit", "выход", "itemdel"]):
+            continue
 
     if action == "buy":
         user_buy = input("Введите id товара для оформления из корзины: ").lower().strip()
+        if not user_buy.isdigit():
+            print("id должен быть числом!")
+            continue
 
-        if user_buy in basket:
-            quantity_in_basket = basket[user_buy]["quantity in basket"]
+        buy_status = action_buy(user_buy, basket, products_list)
 
-            for product in products_list:
-                if product["id"] == user_buy:
-                    product["quantity"] -= quantity_in_basket
+    elif action == "itemdel":
+        itemdel_id = input("Введите id для удаления товара: ").lower().strip()
+        if not itemdel_id.isdigit():
+            print("id должен быть числом!")
+            continue
 
-            del basket[user_buy]
+        action_itemdel(itemdel_id, basket)
 
-            print("Заказ оформлен!\nДоставка через 3 дня!")
+    elif action == "del":
+        if len(search_history) == 0:
+            print("Нет истории поиска для удаления!\nРекомендуем что нибудь поискать!")
+
         else:
-            print("Товара нет в корзине")
+            search_history.clear()
+            print("История поиска очищена!")
 
-    if action == "mtp":
+    elif action == "mtp":
         print("\nСтраницы магазина.\nГлавная страница: 1.\n"
               "Страница категорий: 2.\nПоисковая страница: 3\nКорзина: 4.\n")
 
         user_pade_input = input("Введите номер страницы из перечисленных: ").lower().strip()
 
-        if user_pade_input in ["1", "2", "3", "4"]:
-            current_page = int(user_pade_input)
-            continue
+        new_page = action_mtp(user_pade_input)
+        if new_page is not None:
+            current_page = new_page
 
-    if action == "atb":
+        continue
+
+    elif action == "atb":
         if current_page in [1, 2, 3]:
 
             user_input_items_basket = input("Введите id товаров через запятую для добавления: ").lower().strip()
-            user_split = user_input_items_basket.split(",")
-            unpacet_num = [num.strip() for num in user_split]
-            flag = False
 
-            for id_num in products_list:
+            result = (action_atb(user_input_items_basket, basket, products_list))
 
-                for num_unpuk in unpacet_num:
-
-                    if id_num["id"] == num_unpuk:
-                        if id_num["id"] in basket:
-                             basket[id_num["id"]]["quantity in basket"] += 1
-
-                        else:
-                            basket[id_num["id"]] = {"name": id_num["name"],
-                                                    "price": id_num["price"],
-                                                    "quantity in basket": 1
-                                                    }
-                        flag = True
-
-            if flag:
+            if result:
                 print("Успешное добавление!")
             else:
                 print("Ошибка добавления товара! товар не найден.")
@@ -189,43 +285,28 @@ while True:
         else:
             print("Текущая страница не поддерживает добавление в корзину.")
 
-    if action == "sc":
+    elif action == "sc":
         if current_page == 2:
-            user_input_category = input("Smartphones: 1, Laptop: 2, computers 3."
+            user_input_category = input("Smartphones: 1, Laptop: 2, Computers 3."
                                         "\nВыберите категорию по номерам: ").strip().lower()
 
-            if user_input_category == "":
-                print("Пустой ввод!")
-            elif user_input_category not in ["1", "2", "3"]:
-                print("Некорректный Ввод!\nПовторите ввод по новой!")
+            result_sc = action_sc(user_input_category, selected_category, categories)
 
-            else:
-                if user_input_category == "1":
-                    selected_category = "smartphones"
-                elif user_input_category == "2":
-                    selected_category = "laptops"
-                elif user_input_category == "3":
-                    selected_category = "computers"
-
+            if result_sc:
+                selected_category = result_sc
                 print("Успешная смена категории!")
 
         else:
             print("Текущая страница не поддерживает выбор категории товаров.")
 
-    if action == "s":
+    elif action == "s":
         if current_page == 3:
             search_query = input("\nВведите поисковой запрос: ").lower().strip()
-            if search_query == "":
-                print("Пустой ввод поиска!")
+            action_search(search_query, products_list, search_history)
 
-            else:
-                for search_product in products_list:
-                    if search_query in search_product["name"].lower():
-                        print(f"id: {search_product["id"]}. {search_product["name"]} - {search_product["price"]}$")
-                        print(search_query)
         else:
             print("Текущая страница не поддерживает поиск товаров.")
 
-    if action in ["exit", "выход"]:
+    elif action in ["exit", "выход"]:
         print("Выход из программы.")
         break

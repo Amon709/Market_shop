@@ -89,18 +89,97 @@ class Marketplace:
     # 5. ДЕЙСТВИЯ (переносишь свои action_*)
     # ------------------------- this is start user actions commands -----------------------
     def action_atb(self, user_input):
-        #
         # ... твой код action_atb, basket → self.basket, products_list → self.products
-        pass
 
-    def action_mtp(self, user_input):
-        pass
+        unpacet_num = [num.strip() for num in user_input.split(",")]
 
-    def action_sc(self, user_input):
-        pass
+        flag = False
+    #
+        for num_unpuk in unpacet_num:
+            if  num_unpuk == "":
+                print("Ввод id пустой!")
+                continue
+    #
+            if not num_unpuk.isdigit():
+                print(f"{num_unpuk}: это не число!")
+                continue
 
-    def action_s(self, user_input):
-        pass
+            found = False
+    #
+            for id_num in self.products:
+    #
+                if id_num["id"] == num_unpuk:
+                    if id_num["id"] in self.basket:
+                        self.basket[id_num["id"]]["quantity in basket"] += 1
+
+                    else:
+                        self.basket[id_num["id"]] = {"name": id_num["name"],
+                                                "price": id_num["price"],
+                                                "quantity in basket": 1
+                                                }
+                    flag = True
+                    found = True
+                    break
+
+            if not found:
+                print(f"Товар с id: {num_unpuk} не найден!")
+
+        return flag
+
+    def action_mtp(self, input_new_page):
+
+        if input_new_page == "":
+            print("Пустой ввод!")
+
+        elif input_new_page in ["1", "2", "3", "4"]:
+            return int(input_new_page)
+
+        elif not input_new_page.isdigit():
+            print(f"{input_new_page}: это не число!")
+
+        return None
+
+    def action_sc(self, user_input_category):
+
+        if user_input_category == "":
+            print("Пустой ввод!")
+            return None
+
+        if user_input_category not in ["1", "2", "3"]:
+            print("Некорректный Ввод!\nПовторите ввод по новой!")
+            return None
+
+        new_category = self.categories[int(user_input_category) - 1]["key"]
+
+        if new_category == self.selected_category:
+            print("Сменяемая категория равна текущей!")
+            return None
+
+        return new_category
+
+    def action_s(self, user_input_search):
+        if user_input_search == "":
+            print("Пустой ввод!")
+            return None
+
+        user_search_found = []
+        flag = False
+
+        for product in self.products:
+            if user_input_search.lower() in product["name"].lower():
+                user_search_found.append(product)
+                flag = True
+
+        if flag:
+            self.search_history[user_input_search] = user_search_found
+            for product in user_search_found:
+                print(f"id: {product["id"]}. {product["name"]} - {product["price"]}$")
+
+        else:
+            self.search_history[user_input_search] = "Нет результатов!"
+            print(f"Результат поиска: {user_input_search} - ничего не найдено!")
+
+        return None
 
     def action_buy(self, user_input):
         pass
@@ -128,17 +207,41 @@ class Marketplace:
                 ids = input("Enter the id: ")
 
                 self.action_atb(ids)
+                print(self.basket)
 
             if action == "mtp":
                 input_number_page = input("Enter the page number to modify:  ")
-
                 self.action_mtp(input_number_page)
-                pass
+
+                self.print_commands()
+
+                new_page = self.action_mtp(input_number_page)
+                if new_page is not None:
+                    self.current_page = new_page
+
+                continue
 
             if action == "sc":
-                pass
+                if self.current_page == 2:
+                    user_input_category = input("Smartphones: 1, Laptop: 2, Computers 3."
+                                                "\nВыберите категорию по номерам: ").strip().lower()
+
+                    result_sc = self.action_sc(user_input_category)
+
+                    if result_sc:
+                        self.selected_category = result_sc
+                        print("Успешная смена категории!")
+
+                else:
+                    print("Текущая страница не поддерживает выбор категории товаров.")
+
             if action == "s":
-                pass
+                if self.current_page == 3:
+                    search_query = input("\nВведите поисковой запрос: ").lower().strip()
+                    self.action_s(search_query)
+
+                else:
+                    print("Текущая страница не поддерживает поиск товаров.")
 
             if action == "buy":
                 pass

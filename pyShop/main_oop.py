@@ -1,9 +1,6 @@
 import json
 from data import products_list, categories
 
-# def print_action():
-#     return print("Введите действия: ")
-
 class Marketplace:
     # 1. КОНСТРУКТОР — создаёт объект и загружает данные
     def __init__(self):
@@ -26,10 +23,16 @@ class Marketplace:
     # --------------- this is validation input commands -----------------
 
     def get_commands(self):
+
+        """
+        """
         return self.page_commands.get(self.current_page, [])# не понял функцию понял то что он берет
         # команды из класса и находит текущую страницу и печатает текущие команды под нужный page ?
 
     def print_commands(self):
+        """
+
+        """
         return print("\nEnter the command:", ", ".join(self.get_commands()))# вводят команду из нужных по текущей
         # странице и печатает обяденив нужыне команды из get_command ?
 
@@ -38,10 +41,11 @@ class Marketplace:
 
      # --------------------- this is end validations commands --------------------------
 
-
     # ------------------ this is json saving programs data -----------------------------
     # 2. СОХРАНЕНИЕ В JSON
     def save_data(self):
+        """
+        """
         data_to_save = {
             "basket": self.basket,
             "current_page": self.current_page,
@@ -69,6 +73,22 @@ class Marketplace:
 
     #--------------------- this is start page blog --------------------------
     def page_1(self):
+        """ Показывает главную страницу и топ 5 товаров:
+
+        Пример печати топ 5 товаров:
+            id. 1, categories: smartphones, price: 900 - 10 pcs.
+            id. 2, categories: laptops, price: 1100 - 5 pcs.
+        """
+        # Пример команд для главной страницы перечисление:
+        # Enter the command: mtp, atb, exit
+        #
+        # mtp команда для перехода по страницам
+        #
+        # atb команда для добавления товаров в корзину
+        #
+        # exit команда для выхода из программы и магазина после до выхода
+        # при наборе команды exit происходит сохранение данных в json
+
         print("Главная страница.")
         top_items_products = [top_5 for top_5 in self.products if top_5["is_top"]]
         top_five_items = top_items_products[:5]
@@ -77,13 +97,52 @@ class Marketplace:
         # ... твой код page_1, только products_list → self.products
 
     def page_2(self):
-        pass
+        print("\nКатегории товаров:")
+        for num, all_categ in enumerate(self.categories):
+            print(f"{num + 1}.{all_categ['key']}")
+
+        print("\nВсе товары в выбранной категории:\nПо умолчанию: 'smartphones'\n")
+
+        for categ in self.products:
+            if self.selected_category in categ["category"]:
+                print(f"id. {categ["id"]}, Категория: {categ["category"]},"
+                      f" Название: {categ["name"]}, Цена: {categ["price"]} Количество. {categ["quantity"]}.")
+
+        print("\nПерейти на другую страницу: 'mtp'\nДобавить товары в корзину: 'atb'"
+              "\nИзменить категорию: 'sc'\nВыход: 'exit','выход'\n")
 
     def page_3(self):
-        pass
+        print("\nСтраница поиска:")
+
+        if len(self.search_history) == 0:
+            print(f"Всего товаров {len(self.products)}.\n")
+
+            for products in self.products:
+                print(f"id: {products["id"]}. {products["name"]} - {products["price"]}$")
+
+        else:
+            for num, name in enumerate(self.search_history):
+                print(f"Последний поиск: {num + 1}. {name} - {self.search_history[name]}.")
+
+        print("\nПерейти на другую страницу: 'mtp'\nДобавить товары в корзину: 'atb'"
+              "\nСовершить поиск: 's'\nУдалить поисковую историю: 'del'\nВыход: 'exit','выход'\n")
 
     def page_4(self):
-        pass
+        basket_summ = 0
+        if len(self.basket) == 0:
+            print("Корзина пуста!\nОформите заказ!")
+        else:
+            print("\nКорзина:")
+            for products in self.basket.keys():
+                print(f"id: {products}. {self.basket[products]["name"]}-"
+                      f" {self.basket[products]["price"]}$: {self.basket[products]["quantity in basket"]} шт.")
+
+            for products in self.basket.values():
+                basket_summ += products["price"] * products["quantity in basket"]
+            print(f"\nСумма ценности корзины: {basket_summ}$.")
+
+        print(
+            "\nПерейти на другие страницы: 'mtp'\nОформить заказ: 'Buy'\nУдалить товар: 'itemdel'\nВыход: 'exit','выход'")
     #--------------------------------- this is end page blog ----------------------------
 
     # 5. ДЕЙСТВИЯ (переносишь свои action_*)
@@ -94,20 +153,20 @@ class Marketplace:
         unpacet_num = [num.strip() for num in user_input.split(",")]
 
         flag = False
-    #
+
         for num_unpuk in unpacet_num:
             if  num_unpuk == "":
                 print("Ввод id пустой!")
                 continue
-    #
+
             if not num_unpuk.isdigit():
                 print(f"{num_unpuk}: это не число!")
                 continue
 
             found = False
-    #
+
             for id_num in self.products:
-    #
+
                 if id_num["id"] == num_unpuk:
                     if id_num["id"] in self.basket:
                         self.basket[id_num["id"]]["quantity in basket"] += 1
@@ -181,21 +240,60 @@ class Marketplace:
 
         return None
 
-    def action_buy(self, user_input):
-        pass
+    def action_buy(self, buy_ids_input):
+        if not buy_ids_input:
+            print("Пустой ввод!")
+            return False
 
-    def action_del(self, user_input):
-        pass
+        if buy_ids_input in self.basket:
 
-    def action_itemdel(self, user_input):
-        pass
+            quantity_in_basket = self.basket[buy_ids_input]["quantity in basket"]
+
+            for product in self.products:
+                if product["id"] == buy_ids_input:
+                    product["quantity"] -= quantity_in_basket
+
+            del self.basket[buy_ids_input]
+            print("Заказ оформлен!\nДоставка через 3 дня!")
+            return True
+
+        print("Товара нет в корзине")
+        return False
+
+    def action_itemdel(self, input_id_delite):
+
+        if not input_id_delite:
+            print("Пустой ввод!")
+            return False
+
+        if input_id_delite not in self.basket:
+            print("Такого товара для удаления нету!")
+            return False
+
+        self.basket[input_id_delite]["quantity in basket"] -= 1
+
+        if self.basket[input_id_delite]["quantity in basket"] == 0:
+            del self.basket[input_id_delite]
+            print("Товар удален с корзины!")
+
+        return True
 
     # 6. ГЛАВНЫЙ ЦИКЛ
     def run(self):
         while True:
             if self.current_page == 1:
                 self.page_1()
-                self.print_commands()
+
+            elif self.current_page == 2:
+                self.page_2()
+
+            elif self.current_page == 3:
+                self.page_3()
+
+            elif self.current_page == 4:
+                self.page_4()
+
+            self.print_commands()
 
             action = input("\nEnter the command: ").strip().lower()
 
@@ -206,53 +304,76 @@ class Marketplace:
             if action == "atb":
                 ids = input("Enter the id: ")
 
-                self.action_atb(ids)
-                print(self.basket)
+                if self.action_atb(ids):
+                    print("Успешное добавление!")
+                    self.save_data()
 
-            if action == "mtp":
+                else:
+                    print("Ничего не добавлено!")
+
+            elif action == "mtp":
                 input_number_page = input("Enter the page number to modify:  ")
-                self.action_mtp(input_number_page)
-
-                self.print_commands()
 
                 new_page = self.action_mtp(input_number_page)
+
                 if new_page is not None:
                     self.current_page = new_page
-
+                    self.save_data()
                 continue
 
-            if action == "sc":
-                if self.current_page == 2:
-                    user_input_category = input("Smartphones: 1, Laptop: 2, Computers 3."
-                                                "\nВыберите категорию по номерам: ").strip().lower()
+            elif action == "sc":
 
-                    result_sc = self.action_sc(user_input_category)
+                user_input_category = input("Smartphones: 1, Laptop: 2, Computers 3."
+                                            "\nВыберите категорию по номерам: ").strip().lower()
 
-                    if result_sc:
-                        self.selected_category = result_sc
-                        print("Успешная смена категории!")
+                result_sc = self.action_sc(user_input_category)
+
+                if result_sc:
+                    self.selected_category = result_sc
+                    print("Успешная смена категории!")
+                    self.save_data()
+
+
+            elif action == "s":
+
+                search_query = input("\nВведите поисковой запрос: ").lower().strip()
+                self.action_s(search_query)
+                self.save_data()
+
+
+            elif action == "buy":
+
+                user_buy = input("Введите id товара для оформления из корзины: ").lower().strip()
+
+                if not user_buy.isdigit():
+                    print("id должен быть числом!")
+
+                    continue
+
+                if self.action_buy(user_buy):
+                    self.save_data()
+
+            elif action == "del":
+                if len(self.search_history) == 0:
+                    print("Нет истории поиска для удаления!\nРекомендуем что нибудь поискать!")
 
                 else:
-                    print("Текущая страница не поддерживает выбор категории товаров.")
+                    self.search_history.clear()
+                    print("История поиска очищена!")
+                    self.save_data()
 
-            if action == "s":
-                if self.current_page == 3:
-                    search_query = input("\nВведите поисковой запрос: ").lower().strip()
-                    self.action_s(search_query)
+            elif action == "itemdel":
 
-                else:
-                    print("Текущая страница не поддерживает поиск товаров.")
+                itemdel_id = input("Введите id для удаления товара: ").lower().strip()
 
-            if action == "buy":
-                pass
+                if not itemdel_id.isdigit():
+                    print("id должен быть числом!")
+                    continue
 
-            if action == "del":
-                pass
+                if self.action_itemdel(itemdel_id):
+                    self.save_data()
 
-            if action == "itemdel":
-                pass
-
-            if action == "exit":
+            elif action == "exit":
 
                 print("Program termination!")
                 break

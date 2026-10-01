@@ -1,8 +1,14 @@
 import json
 from data import products_list, categories
+from datetime import datetime
+
+
+def log_error(error):
+    with open('error_log.txt', 'a', encoding='utf-8') as file:
+        file.write(f'{error}\n')
+
 
 class Marketplace:
-    # 1. КОНСТРУКТОР — создаёт объект и загружает данные
     def __init__(self):
         self.products = products_list
         self.categories = categories
@@ -10,53 +16,38 @@ class Marketplace:
         self.current_page = 1
         self.selected_category = "smartphones"
         self.search_history = {}
+        self.purchase_history = []
         self.page_commands = {
             1: ["mtp", "atb", "exit"],
             2: ["mtp", "atb", "sc", "exit"],
             3: ["mtp", "atb", "s", "del", "exit"],
             4: ["mtp", "buy", "itemdel", "exit"],
         }
-
-        # ПРИ ЗАПУСКЕ — автоматом загружаем сохранённую корзину
+        
         self.load_data()
-
-    # --------------- this is validation input commands -----------------
 
     def get_commands(self):
 
-        """
-        """
-        return self.page_commands.get(self.current_page, [])# не понял функцию понял то что он берет
-        # команды из класса и находит текущую страницу и печатает текущие команды под нужный page ?
+        return self.page_commands.get(self.current_page, [])
 
     def print_commands(self):
-        """
 
-        """
-        return print("\nEnter the command:", ", ".join(self.get_commands()))# вводят команду из нужных по текущей
-        # странице и печатает обяденив нужыне команды из get_command ?
+        print("\nEnter the command:", ", ".join(self.get_commands()))
 
-    def is_valid(self, action):# проверка команды валидная ли она или нет и выдавание результата
+    def is_valid(self, action):
         return action in self.get_commands()
 
-     # --------------------- this is end validations commands --------------------------
-
-    # ------------------ this is json saving programs data -----------------------------
-    # 2. СОХРАНЕНИЕ В JSON
     def save_data(self):
-        """
-        """
         data_to_save = {
             "basket": self.basket,
             "current_page": self.current_page,
             "selected_category": self.selected_category,
-            "search_history": self.search_history
+            "search_history": self.search_history,
+            "user_buy_history": self.purchase_history
         }
         with open("shop_data.json", "w", encoding="utf-8") as f:
             json.dump(data_to_save, f, ensure_ascii=False, indent=4)
 
-    # ------------------- this is download from json save files -----------------------
-    # 3. ЗАГРУЗКА ИЗ JSON
     def load_data(self):
         try:
             with open("shop_data.json", "r", encoding="utf-8") as f:
@@ -65,37 +56,23 @@ class Marketplace:
                 self.current_page = data.get("current_page", 1)
                 self.selected_category = data.get("selected_category", "smartphones")
                 self.search_history = data.get("search_history", {})
+                self.purchase_history = data.get("user_buy_history", [])
         except FileNotFoundError:
-            # Если файла нет — просто работаем с пустыми данными
             pass
 
-    # 4. МЕТОДЫ СТРАНИЦ (переносишь свои page_1, page_2...)
+        except json.JSONDecodeError as error:
+            log_error(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | JSON повреждён: {error}")
+            print("Файл поврежден!")
 
-    #--------------------- this is start page blog --------------------------
     def page_1(self):
-        """ Показывает главную страницу и топ 5 товаров:
-
-        Пример печати топ 5 товаров:
-            id. 1, categories: smartphones, price: 900 - 10 pcs.
-            id. 2, categories: laptops, price: 1100 - 5 pcs.
-        """
-        # Пример команд для главной страницы перечисление:
-        # Enter the command: mtp, atb, exit
-        #
-        # mtp команда для перехода по страницам
-        #
-        # atb команда для добавления товаров в корзину
-        #
-        # exit команда для выхода из программы и магазина после до выхода
-        # при наборе команды exit происходит сохранение данных в json
 
         print("Главная страница.")
         top_items_products = [top_5 for top_5 in self.products if top_5["is_top"]]
         top_five_items = top_items_products[:5]
         for product in top_five_items:
             print(f"id. {product['id']}, categories: {product['category']}, price: {product['price']} - {product['quantity']} pcs.")
-        # ... твой код page_1, только products_list → self.products
-
+            
+            
     def page_2(self):
         print("\nКатегории товаров:")
         for num, all_categ in enumerate(self.categories):
@@ -104,9 +81,9 @@ class Marketplace:
         print("\nВсе товары в выбранной категории:\nПо умолчанию: 'smartphones'\n")
 
         for categ in self.products:
-            if self.selected_category in categ["category"]:
-                print(f"id. {categ["id"]}, Категория: {categ["category"]},"
-                      f" Название: {categ["name"]}, Цена: {categ["price"]} Количество. {categ["quantity"]}.")
+            if self.selected_category == categ['category']:
+                print(f"id. {categ['id']}, Категория: {categ['category']},"
+                      f" Название: {categ['name']}, Цена: {categ['price']} Количество. {categ['quantity']}.")
 
         print("\nПерейти на другую страницу: 'mtp'\nДобавить товары в корзину: 'atb'"
               "\nИзменить категорию: 'sc'\nВыход: 'exit','выход'\n")
@@ -118,11 +95,14 @@ class Marketplace:
             print(f"Всего товаров {len(self.products)}.\n")
 
             for products in self.products:
-                print(f"id: {products["id"]}. {products["name"]} - {products["price"]}$")
+                print(f"id: {products['id']}. {products['name']} - {products['price']}$")
 
         else:
-            for num, name in enumerate(self.search_history):
-                print(f"Последний поиск: {num + 1}. {name} - {self.search_history[name]}.")
+            for num, (query, results) in enumerate(self.search_history.items(), start=1):
+                if isinstance(results, list):
+                    print(f"{num}. Поиск '{query}': найдено {len(results)}")
+                else:
+                    print(f"{num}. Поиск '{query}': {results}")
 
         print("\nПерейти на другую страницу: 'mtp'\nДобавить товары в корзину: 'atb'"
               "\nСовершить поиск: 's'\nУдалить поисковую историю: 'del'\nВыход: 'exit','выход'\n")
@@ -134,8 +114,8 @@ class Marketplace:
         else:
             print("\nКорзина:")
             for products in self.basket.keys():
-                print(f"id: {products}. {self.basket[products]["name"]}-"
-                      f" {self.basket[products]["price"]}$: {self.basket[products]["quantity in basket"]} шт.")
+                print(f"id: {products}. {self.basket[products]['name']}-"
+                      f" {self.basket[products]['price']}$: {self.basket[products]['quantity in basket']} шт.")
 
             for products in self.basket.values():
                 basket_summ += products["price"] * products["quantity in basket"]
@@ -143,13 +123,9 @@ class Marketplace:
 
         print(
             "\nПерейти на другие страницы: 'mtp'\nОформить заказ: 'Buy'\nУдалить товар: 'itemdel'\nВыход: 'exit','выход'")
-    #--------------------------------- this is end page blog ----------------------------
 
-    # 5. ДЕЙСТВИЯ (переносишь свои action_*)
-    # ------------------------- this is start user actions commands -----------------------
     def action_atb(self, user_input):
-        # ... твой код action_atb, basket → self.basket, products_list → self.products
-
+        
         unpacet_num = [num.strip() for num in user_input.split(",")]
 
         flag = False
@@ -232,7 +208,7 @@ class Marketplace:
         if flag:
             self.search_history[user_input_search] = user_search_found
             for product in user_search_found:
-                print(f"id: {product["id"]}. {product["name"]} - {product["price"]}$")
+                print(f"id: {product['id']}. {product['name']} - {product['price']}$")
 
         else:
             self.search_history[user_input_search] = "Нет результатов!"
@@ -250,8 +226,22 @@ class Marketplace:
             quantity_in_basket = self.basket[buy_ids_input]["quantity in basket"]
 
             for product in self.products:
+
                 if product["id"] == buy_ids_input:
+                    if product["quantity"] < quantity_in_basket:
+                        print(f"Недостаточно товара! На складе: {product['quantity']}")
+                        return False
+
                     product["quantity"] -= quantity_in_basket
+                    break
+
+            self.purchase_history.append({
+                "id": buy_ids_input,
+                "name": self.basket[buy_ids_input]["name"],
+                "price": self.basket[buy_ids_input]["price"],
+                "quantity": quantity_in_basket,
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
 
             del self.basket[buy_ids_input]
             print("Заказ оформлен!\nДоставка через 3 дня!")
@@ -378,11 +368,9 @@ class Marketplace:
                 print("Program termination!")
                 break
 
-        # После выхода из цикла — сохраняем
         self.save_data()
         print("Данные сохранены.")
 
-# 7. ЗАПУСК
 if __name__ == "__main__":
     shop = Marketplace()
     shop.run()
